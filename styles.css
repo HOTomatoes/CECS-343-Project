@@ -13,6 +13,8 @@ h1 {
 #gameContainer {
     display: flex; /* Use flexbox to position the game */
     justify-content: center; /* Center the canvas */
+    position: relative; /* Positioning context for absolute elements */
+    height: calc(100vh - 100px); /* Set the height of the game container */
 }
 
 #gameCanvas {
@@ -20,4 +22,23 @@ h1 {
     height: calc(100vh - 100px); /* Full height minus space for the title */
     background-color: #fff; /* White background for the game */
     border: 1px solid #ccc; /* Optional: add a border for visual separation */
+}
+
+/* Styles for the Find Game button */
+#findGameButton {
+    position: absolute; /* Allow positioning relative to the game container */
+    bottom: 20px; /* Position 20px from the bottom of the container */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Adjust for half the width of the button */
+    padding: 10px 20px; /* Smaller padding for a smaller button */
+    font-size: 16px; /* Font size */
+    background-color: #4CAF50; /* Green background */
+    color: white; /* White text */
+    border: none; /* Remove border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+}
+
+#findGameButton:hover {
+    background-color: #45a049; /* Darker green on hover */
 }
