@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multiplayer Snake Game</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Link to your CSS file -->
+    <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
-    <div id="game-container">
+    <h1>Multiplayer Snake Game</h1>
+    <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
+        <button id="findGameButton">Find Game</button>
     </div>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="game.js"></script> <!-- Link to your game logic -->
+    <script src="script.js"></script>
 </body>
 </html>
