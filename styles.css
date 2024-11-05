@@ -42,3 +42,17 @@ h1 {
 #findGameButton:hover {
     background-color: #45a049; /* Darker green on hover */
 }
+
+/* Styles for the Queue Timer */
+#queueTimer {
+    position: absolute; /* Allow positioning relative to the game container */
+    top: 20px; /* Position 20px from the top of the container */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Adjust for half the width of the timer */
+    font-size: 24px; /* Larger font size for visibility */
+    color: #333; /* Dark color for the timer text */
+    background-color: rgba(255, 255, 255, 0.8); /* Light background with some transparency */
+    padding: 10px; /* Padding around the text */
+    border-radius: 5px; /* Rounded corners */
+    display: none; /* Initially hidden until the queue starts */
+}
