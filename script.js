@@ -1,152 +1,66 @@
-const socket = io(); // Connect to the server
+const socket = io();
+let timerInterval;
+let timeInQueue = 0;
+const queueTimerElement = document.getElementById('queueTimer');
+const timeDisplay = document.getElementById('timeInQueue');
+const gameCanvas = document.getElementById('gameCanvas');
+const findGameButton = document.getElementById('findGameButton');
+const gameContainer = document.getElementById('gameContainer');
+let inQueue = false; // Track whether the player is in the queue
+
+// Show the game container
+function showGameContainer() {
+    gameContainer.style.display = 'block';
+}
+
+// Start the queue timer
+function startQueueTimer() {
+    timeInQueue = 0;
+    queueTimerElement.style.display = 'block';
+    timerInterval = setInterval(() => {
+        timeInQueue++;
+        timeDisplay.textContent = timeInQueue;
+    }, 1000);
+}
+
+// Stop the queue timer
+function stopQueueTimer() {
+    clearInterval(timerInterval);
+    queueTimerElement.style.display = 'none';
+}
 
 // Handle the "Find Game" button click
-document.getElementById('findGameButton').addEventListener('click', () => {
+findGameButton.addEventListener('click', () => {
+    if (inQueue) {
+        // If already in queue, do not allow another click
+        return;
+    }
+
     socket.emit('findGame'); // Emit the findGame event to the server
+    startQueueTimer(); // Start the queue timer
+    findGameButton.style.display = 'none'; // Hide the button once clicked
+    inQueue = true; // Set the flag to true indicating the player is now in the queue
 });
-
-// Game canvas setup
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight * 0.8; // Adjust to take most of the viewport
-
-// Game variables
-let snake = [];
-let apples = []; // Array to hold multiple apples
-let gridSize = 20; // Size of each square in the grid
-let snakeLength = 5;
-
-// Snake movement variables
-let direction = { x: 0, y: 0 }; // Current direction of the snake
-const MOVE_SPEED = gridSize; // Move by one grid cell at a time
-const NUM_APPLES = 4; // Number of apples on the map
 
 // When the game starts
 socket.on('startGame', (data) => {
-    console.log('Game is starting with players:', data.players);
-    initGame(data.players);
+    stopQueueTimer(); // Stop the queue timer
+    queueTimerElement.style.display = 'none'; // Hide the queue timer
+    gameCanvas.style.display = 'block'; // Show the game canvas
+    initGame(data.players); // Initialize the game with players
+    inQueue = false; // Reset the inQueue flag
 });
 
-// Handle a player disconnecting
-socket.on('playerDisconnected', (data) => {
-    console.log(`Player ${data.id} has left the game`);
-    // Update game state accordingly
-});
-
-// Matchmaking failure
+// Handle matchmaking failure
 socket.on('matchmakingFailed', (data) => {
     alert(data.message);
+    stopQueueTimer(); // Stop the timer if matchmaking fails
+    queueTimerElement.style.display = 'none'; // Hide the queue timer
+    findGameButton.style.display = 'block'; // Show the find game button again
+    inQueue = false; // Reset the inQueue flag
 });
 
-// Function to initialize the game with players
-function initGame(players) {
-    init(); // Initialize the game
-    console.log("Initializing game for players:", players);
-}
-
-// Initialize snake
-function init() {
-    // Initialize the snake in the starting position
-    for (let i = 0; i < snakeLength; i++) {
-        snake.push({ x: i * gridSize, y: 0 }); // Starting at the top-left
-    }
-    spawnApples(); // Spawn the initial apples
-    gameLoop();
-}
-
-// Key event listener for movement
-document.addEventListener('keydown', (event) => {
-    switch (event.key) {
-        case 'w':
-        case 'W':
-            if (direction.y === 0) direction = { x: 0, y: -1 }; // Move up
-            break;
-        case 'a':
-        case 'A':
-            if (direction.x === 0) direction = { x: -1, y: 0 }; // Move left
-            break;
-        case 's':
-        case 'S':
-            if (direction.y === 0) direction = { x: 0, y: 1 }; // Move down
-            break;
-        case 'd':
-        case 'D':
-            if (direction.x === 0) direction = { x: 1, y: 0 }; // Move right
-            break;
-    }
+// Countdown function and game start
+socket.on('startGameCountdown', () => {
+    countdown(3); // Start a 3-second countdown before the game starts
 });
-
-// Function to spawn apples at random positions
-function spawnApples() {
-    apples = []; // Reset the apples array
-    for (let i = 0; i < NUM_APPLES; i++) {
-        let newApple;
-        do {
-            newApple = {
-                x: Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize,
-                y: Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize
-            };
-        } while (isAppleOnSnake(newApple)); // Ensure apple does not overlap with the snake
-
-        apples.push(newApple); // Add the new apple to the apples array
-    }
-}
-
-// Check if the apple overlaps with the snake
-function isAppleOnSnake(apple) {
-    return snake.some(part => part.x === apple.x && part.y === apple.y);
-}
-
-// Game loop to draw the game
-function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
-
-    // Move the snake
-    moveSnake();
-
-    // Draw apples
-    ctx.fillStyle = 'red';
-    apples.forEach(apple => {
-        ctx.fillRect(apple.x, apple.y, gridSize, gridSize);
-    });
-
-    // Draw snake
-    ctx.fillStyle = 'green';
-    snake.forEach(part => {
-        ctx.fillRect(part.x, part.y, gridSize, gridSize);
-    });
-
-    // Check for apple collisions
-    checkAppleCollision();
-
-    requestAnimationFrame(gameLoop);
-}
-
-// Move the snake in the current direction
-function moveSnake() {
-    // Calculate new head position based on direction
-    const head = { x: snake[0].x + direction.x * MOVE_SPEED, y: snake[0].y + direction.y * MOVE_SPEED };
-
-    // Add the new head to the snake
-    snake.unshift(head);
-
-    // Remove the tail segment (unless we're growing)
-    if (snake.length > snakeLength) {
-        snake.pop();
-    }
-}
-
-// Check for apple collision
-function checkAppleCollision() {
-    for (let i = apples.length - 1; i >= 0; i--) {
-        if (snake[0].x === apples[i].x && snake[0].y === apples[i].y) {
-            snakeLength++; // Grow the snake
-            apples.splice(i, 1); // Remove the eaten apple
-            spawnApples(); // Spawn a new set of apples
-        }
-    }
-}
-
-window.onload = init;
