@@ -16,9 +16,9 @@ cancelSearchButton.style.display = 'none';
 
 // Show the game container and queue timer when player clicks "Find Game"
 function showGameContainer() {
-    gameContainer.style.display = 'block';
-    queueTimerElement.style.display = 'block';
-    cancelSearchButton.style.display = 'block';
+    gameContainer.style.display = 'block'; // Show the game container
+    queueTimerElement.style.display = 'block'; // Show the queue timer
+    cancelSearchButton.style.display = 'block'; // Show the cancel search button
 }
 
 // Start the queue timer
