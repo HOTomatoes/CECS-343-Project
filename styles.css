@@ -1,0 +1,23 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Prevent scrolling */
+    background-color: #f0f0f0; /* Light grey background */
+}
+
+h1 {
+    text-align: center; /* Center the title */
+    margin: 20px 0; /* Add some space above and below the title */
+}
+
+#gameContainer {
+    display: flex; /* Use flexbox to position the game */
+    justify-content: center; /* Center the canvas */
+}
+
+#gameCanvas {
+    width: 100vw; /* Full width of the viewport */
+    height: calc(100vh - 100px); /* Full height minus space for the title */
+    background-color: #fff; /* White background for the game */
+    border: 1px solid #ccc; /* Optional: add a border for visual separation */
+}
