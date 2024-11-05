@@ -7,12 +7,14 @@
     <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
+    <h1>Multiplayer Snake Game</h1> <!-- Always display the title -->
+    <button id="findGameButton">Find Game</button> <!-- Always visible initially -->
     <div id="gameContainer" style="display: none;">
-        <button id="findGameButton">Find Game</button>
         <div id="queueTimer" style="display: none;">Queue Time: <span id="timeInQueue">0</span> seconds</div>
         <button id="cancelSearchButton" style="display: none;">Cancel Search</button>
         <canvas id="gameCanvas" style="display: none;"></canvas>
     </div>
+
     <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
 </body>
