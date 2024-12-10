@@ -1,5 +1,5 @@
 const express = require('express');
-const path  = require('path');
+const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
 
@@ -15,16 +15,39 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Player queue
+let queue = [];
+
 // Handle WebSocket connections
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
 
-    socket.on('message', (data) => {
-        console.log('Message received:', data);
+    socket.on('joinQueue', () => {
+        if (!queue.includes(socket)) {
+            queue.push(socket);
+        }
+        console.log('Queue:', queue.map(player => player.id));
+
+        // Check if there are enough players to start a game
+        if (queue.length >= 4) {
+            const gamePlayers = queue.splice(0, 4); // Take the first 4 players
+            const gameData = { playerIds: gamePlayers.map(player => player.id) };
+
+            // Notify players to start the game
+            gamePlayers.forEach(player => {
+                player.emit('startGame', gameData);
+            });
+        }
+    });
+
+    socket.on('leaveQueue', () => {
+        queue = queue.filter(player => player.id !== socket.id);
+        console.log('User left the queue:', socket.id);
     });
 
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
+        queue = queue.filter(player => player.id !== socket.id);
     });
 });
 
