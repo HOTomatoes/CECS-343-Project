@@ -42,32 +42,78 @@
 <body>
     <div id="titleScreen">
         <h1>Super Snake</h1>
-        <button id="startButton">Find Game</button>
+        <button id="find-game-btn">Find Game</button>
+        <button id="cancel-search-btn" style="display: none;">Cancel Search</button>
+        <div id="queue-timer" style="display: none;">Waiting Time: <span id="timer">0</span>s</div>
     </div>
     <script>
-        const startButton = document.getElementById('startButton');
+        const socket = io.connect(); // Connect to Socket.io server
+        let timerInterval;
+        let timerCount = 0;
+
+        const findGameBtn = document.getElementById('find-game-btn');
+        const cancelSearchBtn = document.getElementById('cancel-search-btn');
+        const queueTimer = document.getElementById('queue-timer');
+        const timerDisplay = document.getElementById('timer');
         const titleScreen = document.getElementById('titleScreen');
 
-        startButton.addEventListener('click', () => {
-            titleScreen.style.display = 'none';
+        // When "Find Game" button is clicked
+        findGameBtn.addEventListener('click', () => {
+            socket.emit('joinQueue'); // Emit "joinQueue" event to server
+            toggleQueueControls(true); // Switch to "Cancel Search" mode
+            startTimer();
+        });
 
-            // Set game to full window size
+        // When "Cancel Search" button is clicked
+        cancelSearchBtn.addEventListener('click', () => {
+            socket.emit('leaveQueue'); // Emit "leaveQueue" event to server
+            toggleQueueControls(false); // Switch back to "Find Game" mode
+            stopTimer();
+        });
+
+        // Handle game start from server
+        socket.on('startGame', (gameData) => {
+            stopTimer();
+            titleScreen.style.display = 'none'; // Hide the title screen
             const width = window.innerWidth;
             const height = window.innerHeight;
 
             const game = new Phaser.Game(width, height, Phaser.AUTO, null);
             game.state.add('Game', Game);
-            game.state.start('Game');
+            game.state.start('Game', true, false, gameData);
+
+            // Adjust the game size if the window is resized
+            window.addEventListener('resize', () => {
+                if (game) {
+                    const width = window.innerWidth;
+                    const height = window.innerHeight;
+                    game.scale.setGameSize(width, height);
+                }
+            });
         });
 
-        // Adjust the game size if the window is resized
-        window.addEventListener('resize', () => {
-            if (game) {
-                const width = window.innerWidth;
-                const height = window.innerHeight;
-                game.scale.setGameSize(width, height);
-            }
-        });
+        // Helper function to toggle buttons and timer
+        function toggleQueueControls(inQueue) {
+            findGameBtn.style.display = inQueue ? 'none' : 'block';
+            cancelSearchBtn.style.display = inQueue ? 'block' : 'none';
+            queueTimer.style.display = inQueue ? 'block' : 'none';
+        }
+
+        // Start the timer
+        function startTimer() {
+            timerCount = 0;
+            timerDisplay.textContent = timerCount;
+            timerInterval = setInterval(() => {
+                timerCount++;
+                timerDisplay.textContent = timerCount;
+            }, 1000);
+        }
+
+        // Stop the timer
+        function stopTimer() {
+            clearInterval(timerInterval);
+            timerDisplay.textContent = '0';
+        }
     </script>
 </body>
 </html>
