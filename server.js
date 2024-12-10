@@ -23,23 +23,29 @@ io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
 
     socket.on('joinQueue', () => {
-    if (!queue.includes(socket)) {
-        queue.push(socket);
-    }
-    console.log('Queue:', queue.map(player => player.id));
+        if (!queue.includes(socket)) {
+            queue.push(socket);
+        }
+        console.log('Queue:', queue.map(player => player.id));
 
-    // Check if there are enough players to start a game
-    while (queue.length >= 4) {
-        const gamePlayers = queue.splice(0, 4); // Take the first 4 players
-        const gameId = `game_${Date.now()}_${Math.random()}`;
-        const gameData = { gameId, playerIds: gamePlayers.map(player => player.id) };
+        // Check if there are enough players to start a game
+        if (queue.length >= 4) {
+            const gamePlayers = queue.splice(0, 4); // Take the first 4 players
+            const colors = ['red-circle', 'yellow-circle', 'green-circle', 'blue-circle'];
 
-        // Notify players to start the game
-        gamePlayers.forEach(player => {
-            player.emit('startGame', gameData);
-        });
+            // Assign unique colors to players
+            const gameData = gamePlayers.map((player, index) => ({
+                id: player.id,
+                color: colors[index]
+            }));
 
-        console.log(`Game started with ID: ${gameId}`);
+            // Notify players to start the game with their assigned colors
+            gamePlayers.forEach((player, index) => {
+                player.emit('startGame', {
+                    players: gameData,
+                    playerId: player.id
+                });
+            });
         }
     });
 
