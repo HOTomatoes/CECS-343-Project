@@ -23,20 +23,23 @@ io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
 
     socket.on('joinQueue', () => {
-        if (!queue.includes(socket)) {
-            queue.push(socket);
-        }
-        console.log('Queue:', queue.map(player => player.id));
+    if (!queue.includes(socket)) {
+        queue.push(socket);
+    }
+    console.log('Queue:', queue.map(player => player.id));
 
-        // Check if there are enough players to start a game
-        if (queue.length >= 4) {
-            const gamePlayers = queue.splice(0, 4); // Take the first 4 players
-            const gameData = { playerIds: gamePlayers.map(player => player.id) };
+    // Check if there are enough players to start a game
+    while (queue.length >= 4) {
+        const gamePlayers = queue.splice(0, 4); // Take the first 4 players
+        const gameId = `game_${Date.now()}_${Math.random()}`;
+        const gameData = { gameId, playerIds: gamePlayers.map(player => player.id) };
 
-            // Notify players to start the game
-            gamePlayers.forEach(player => {
-                player.emit('startGame', gameData);
-            });
+        // Notify players to start the game
+        gamePlayers.forEach(player => {
+            player.emit('startGame', gameData);
+        });
+
+        console.log(`Game started with ID: ${gameId}`);
         }
     });
 
