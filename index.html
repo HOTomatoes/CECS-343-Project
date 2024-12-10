@@ -78,6 +78,7 @@
 
         // Handle game start from server
         socket.on('startGame', (gameData) => {
+            console.log('Received gameData:', gameData);
             stopTimer();
             titleScreen.style.display = 'none'; // Hide the title screen
 
