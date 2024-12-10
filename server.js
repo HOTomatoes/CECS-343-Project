@@ -39,6 +39,9 @@ io.on('connection', (socket) => {
                 color: colors[index]
             }));
 
+            // Log gameData for debugging
+            console.log('gameData:', gameData);
+
             // Notify players to start the game with their assigned colors
             gamePlayers.forEach((player, index) => {
                 player.emit('startGame', {
