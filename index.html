@@ -33,7 +33,7 @@
             color: white;
             font-size: 48px;
         }
-        #startButton {
+        #find-game-btn {
             padding: 10px 20px;
             font-size: 24px;
             cursor: pointer;
@@ -85,9 +85,9 @@
             const height = window.innerHeight;
             const game = new Phaser.Game(width, height, Phaser.AUTO, null);
 
-            // Pass the player ID and other game data
+            // Pass the player data to the Phaser game
             game.state.add('Game', Game);
-            game.state.start('Game', true, false, { ...gameData, playerId: socket.id });
+            game.state.start('Game', true, false, gameData);
 
             window.addEventListener('resize', () => {
                 if (game) {
