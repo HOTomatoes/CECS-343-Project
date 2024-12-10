@@ -80,14 +80,15 @@
         socket.on('startGame', (gameData) => {
             stopTimer();
             titleScreen.style.display = 'none'; // Hide the title screen
+
             const width = window.innerWidth;
             const height = window.innerHeight;
-
             const game = new Phaser.Game(width, height, Phaser.AUTO, null);
-            game.state.add('Game', Game);
-            game.state.start('Game', true, false, gameData);
 
-            // Adjust the game size if the window is resized
+            // Pass the player ID and other game data
+            game.state.add('Game', Game);
+            game.state.start('Game', true, false, { ...gameData, playerId: socket.id });
+
             window.addEventListener('resize', () => {
                 if (game) {
                     const width = window.innerWidth;
