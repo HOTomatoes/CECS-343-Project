@@ -1,126 +1,110 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-    <meta charset="utf-8" />
-    <title>SuperSnake</title>
-    <link rel="icon" href="assets/SnakeProject.png" type="image/x-icon">
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="extlib/phaser.min.js"></script>
-    <script src="game/game.js"></script>
-    <script src="game/snake.js"></script>
-    <script src="game/playerSnake.js"></script>
-    <script src="game/eye.js"></script>
-    <script src="game/eyePair.js"></script>
-    <script src="game/shadow.js"></script>
-    <script src="game/food.js"></script>
-    <script src="game/util.js"></script>
+  <head>
+    <title>SSSquare SSSnakes</title>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            overflow: hidden; /* Prevent scrollbars */
-            height: 100%;
-        }
-        #titleScreen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background: black;
-        }
-        h1 {
-            color: white;
-            font-size: 48px;
-        }
-        #find-game-btn {
-            padding: 10px 20px;
-            font-size: 24px;
-            cursor: pointer;
-        }
-        #queue-timer {
-            color: white; /* Set queue timer text color to white */
-            margin-top: 10px;
-        }
+      * { margin: 0; padding: 0; }
+      body { font: 24px Helvetica, Arial; }
+      #scores { float: right; padding-top: 16px; padding-right: 16px; }
     </style>
-</head>
-<body>
-    <div id="titleScreen">
-        <h1>Super Snake</h1>
-        <button id="find-game-btn">Find Game</button>
-        <button id="cancel-search-btn" style="display: none;">Cancel Search</button>
-        <div id="queue-timer" style="display: none;">Waiting Time: <span id="timer">0</span>s</div>
+  </head>
+  <body>
+    <div id="scores">
+      <div id="own">
+        Nickname: <input type="text" id="nickname" />
+        <input type="button" id="auth" value="Play!" />
+      </div>
+      <hr />
+      <div id="others">
+      </div>
     </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
-        const socket = io.connect(); // Connect to Socket.io server
-        let timerInterval;
-        let timerCount = 0;
+      GameCanvas = (function() {
+        function GameCanvas(canvas) {
+          var ratio = window.innerWidth < window.innerHeight ?
+            window.innerWidth : window.innerHeight;
 
-        const findGameBtn = document.getElementById('find-game-btn');
-        const cancelSearchBtn = document.getElementById('cancel-search-btn');
-        const queueTimer = document.getElementById('queue-timer');
-        const timerDisplay = document.getElementById('timer');
-        const titleScreen = document.getElementById('titleScreen');
+          this.canvas = canvas;
+          this.canvas.width = this.canvas.height = ratio;
+          this.context = this.canvas.getContext('2d');
+          this.gridSize = 40;
+          this.cellSize = ratio / this.gridSize;
+        }
 
-        // When "Find Game" button is clicked
-        findGameBtn.addEventListener('click', () => {
-            socket.emit('joinQueue'); // Emit "joinQueue" event to server
-            toggleQueueControls(true); // Switch to "Cancel Search" mode
-            startTimer();
-        });
+        GameCanvas.prototype.draw = function(players, apples) {
+          var context = this.context;
+          var cellSize = this.cellSize;
 
-        // When "Cancel Search" button is clicked
-        cancelSearchBtn.addEventListener('click', () => {
-            socket.emit('leaveQueue'); // Emit "leaveQueue" event to server
-            toggleQueueControls(false); // Switch back to "Find Game" mode
-            stopTimer();
-        });
+          this.context.fillStyle = "#555";
+          this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Handle game start from server
-        socket.on('startGame', (gameData) => {
-            console.log('Received gameData:', gameData);
-            stopTimer();
-            titleScreen.style.display = 'none'; // Hide the title screen
+          $('#others').text('');
 
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-            const game = new Phaser.Game(width, height, Phaser.AUTO, null);
+          players.forEach((p) => {
+            if (p.id === playerId) {
+              $('#own').text(p.nickname + ' score: ' + p.points).append($('<br>'));
+            } else {
+              $('#others').append($('<span>').text(p.nickname + ' ' + p.id + ': ' + p.points)).append($('<br>'));
+            }
 
-            // Pass the player data to the Phaser game
-            game.state.add('Game', Game);
-            game.state.start('Game', true, false, gameData);
+            if (p.id === playerId) {
+              context.fillStyle = "#fff";
+            } else {
+              context.fillStyle = "#4286f4";
+            }
+            context.fillRect(p.x * cellSize, p.y * cellSize, cellSize, cellSize);
 
-            window.addEventListener('resize', () => {
-                if (game) {
-                    const width = window.innerWidth;
-                    const height = window.innerHeight;
-                    game.scale.setGameSize(width, height);
-                }
+            p.tail.forEach((t) => {
+              context.fillRect(t.x * cellSize, t.y * cellSize, cellSize, cellSize);
             });
-        });
+          });
 
-        // Helper function to toggle buttons and timer
-        function toggleQueueControls(inQueue) {
-            findGameBtn.style.display = inQueue ? 'none' : 'block';
-            cancelSearchBtn.style.display = inQueue ? 'block' : 'none';
-            queueTimer.style.display = inQueue ? 'block' : 'none';
-        }
+          apples.forEach((a) => {
+            context.fillStyle = "#ff0000";
+            context.fillRect(a.x * cellSize, a.y * cellSize, cellSize, cellSize);
+          });
+        };
 
-        // Start the timer
-        function startTimer() {
-            timerCount = 0;
-            timerDisplay.textContent = timerCount;
-            timerInterval = setInterval(() => {
-                timerCount++;
-                timerDisplay.textContent = timerCount;
-            }, 1000);
-        }
+        return GameCanvas;
+      })();
 
-        // Stop the timer
-        function stopTimer() {
-            clearInterval(timerInterval);
-            timerDisplay.textContent = '0';
+      var socket = io();
+      var playerId;
+      var nickname;
+
+      $('#auth').click(() => {
+        nickname = $('#nickname').val().trim();
+        if (nickname && nickname !== '') {
+          $('#auth').prop('disabled', true); // Disable the "Play" button
+          socket.emit('auth', { nickname }, (session) => {
+            playerId = session.id;
+            console.log('new session: ' + playerId);
+          });
         }
+      });
+
+      socket.on('playerCount', (count) => {
+        if (count < 6) {
+          $('#own').text(`${count}/6 Players found`);
+        } else {
+          $('#own').text('6/6 Players found. Starting Game!');
+        }
+      });
+
+      var canvas = document.createElement("canvas");
+      document.body.appendChild(canvas);
+
+      var game = new GameCanvas(canvas);
+
+      document.onkeydown = (ev) => {
+        socket.emit('key', ev.keyCode);
+      };
+
+      socket.on('state', (stuff) => {
+        game.draw(stuff.players, stuff.apples);
+      });
     </script>
-</body>
+  </body>
 </html>
