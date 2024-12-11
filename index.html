@@ -3,9 +3,26 @@
   <head>
     <title>SSSquare SSSnakes</title>
     <style>
-      * { margin: 0; padding: 0; }
-      body { font: 24px Helvetica, Arial; }
-      #scores { float: right; padding-top: 16px; padding-right: 16px; }
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      html, body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden; /* Disable scrolling */
+      }
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font: 24px Helvetica, Arial;
+      }
+      #scores {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+      }
     </style>
   </head>
   <body>
