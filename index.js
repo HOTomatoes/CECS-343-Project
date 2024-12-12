@@ -83,7 +83,7 @@ io.on('connection', (client) => {
     io.emit('playerCount', players.length);
 
     // Stop the game if players drop below 4
-    if (players.length < 4) {
+    if (players.length < 1) {
       console.log("Not enough players. Stopping the game...");
       gameStarted = false;
     }
@@ -91,7 +91,7 @@ io.on('connection', (client) => {
 });
 
 // Create apples
-for (let i = 0; i < 3; i++) {
+for (let i = 0; i < 4; i++) {
   apples.push(new Apple({
     gridSize: GRID_SIZE,
     snakes: players,
