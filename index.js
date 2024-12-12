@@ -60,6 +60,20 @@ http.listen(3000, () => {
         totalPlayers: players.length
       });
 
+      client.on('cancel-waiting', () => {
+        if (player) {
+          // Remove the player from the waiting queue
+          _.remove(players, { id: player.id });
+          console.log(`${player.nickname} canceled waiting. Remaining players: ${players.length}`);
+
+        // Notify the client that their request was processed
+        client.emit('cancel-waiting-response');
+
+        // Notify others if necessary
+        io.emit('playerCount', players.length);
+  }
+});
+
     // Start the game if enough players
     if (players.length >= 6 && !gameStarted) {
       console.log("Enough players! Starting the game...");
