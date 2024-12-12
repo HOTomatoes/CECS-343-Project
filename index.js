@@ -35,25 +35,30 @@ http.listen(3000, () => {
 /*
  * Listen for incoming clients
  */
-io.on('connection', (client) => {
-  let player;
-  let id;
+  io.on('connection', (client) => {
+    let player;
+    let id;
 
-  client.on('auth', (opts, cb) => {
-    // Create player
-    id = ++autoId;
-    player = new Snake(_.assign({
-      id,
-      dir: 'right',
-      gridSize: GRID_SIZE,
-      snakes: players,
-      apples
-    }, opts));
-    players.push(player);
-    console.log(`${opts.nickname} joined the game! Total players: ${players.length}`);
+    client.on('auth', (opts, cb) => {
+      // Create player
+      id = ++autoId;
+      player = new Snake(_.assign({
+        id,
+        dir: 'right',
+        gridSize: GRID_SIZE,
+        snakes: players,
+        apples
+      }, opts));
+     players.push(player);
+      console.log(`${opts.nickname} joined the game! Total players: ${players.length}`);
 
-    // Notify all clients about the current player count
-    io.emit('playerCount', players.length);
+      // Notify ONLY the client who just joined about their joining status
+      client.emit('playerCount', players.length);
+
+      // Broadcast to other clients that players have been updated (if needed)
+      client.broadcast.emit('otherPlayerJoined', {
+        totalPlayers: players.length
+      });
 
     // Start the game if enough players
     if (players.length >= 6 && !gameStarted) {
@@ -82,7 +87,7 @@ io.on('connection', (client) => {
     // Notify all clients about the updated player count
     io.emit('playerCount', players.length);
 
-    // Stop the game if players drop below 4
+    // Stop the game if players drop below 1
     if (players.length < 1) {
       console.log("Not enough players. Stopping the game...");
       gameStarted = false;
