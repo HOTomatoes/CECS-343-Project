@@ -128,12 +128,13 @@
       });
 
       socket.on('playerCount', (count) => {
-        if (count < 6) {
-          $('#own').text(`${count}/6 Players found`);
-        } else {
-          $('#own').text('6/6 Players found. Starting Game!');
-        }
-      });
+	// Only update the local client's view if they've already authenticated
+          if (count < 6) {
+            $('#own').text(`${count}/6 Players found`);
+          } else {
+            $('#own').text('6/6 Players found. Starting Game!');
+          }
+	});
 
       var canvas = document.createElement("canvas");
       document.body.appendChild(canvas);
