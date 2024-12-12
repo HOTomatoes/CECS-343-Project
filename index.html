@@ -2,29 +2,39 @@
 <html>
   <head>
     <title>SSSquare SSSnakes</title>
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-      }
-      html, body {
-        width: 100%;
-        height: 100%;
-        overflow: hidden; /* Disable scrolling */
-      }
-      body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font: 24px Helvetica, Arial;
-      }
-      #scores {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-      }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap" rel="stylesheet">
   </head>
+  <style>
+    * {
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    /* Disable scrolling */
+  }
+
+  body {
+    background-color: navy;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font: 24px Pixelify Sans;
+  }
+
+  #scores {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font: 24px Pixelify Sans;
+    color: whitesmoke;
+  }
+  </style>
   <body>
     <div id="scores">
       <div id="own">
@@ -50,36 +60,51 @@
           this.cellSize = ratio / this.gridSize;
         }
 
+        function getRandomColor() {
+          const letters = '0123456789ABCDEF';
+          let color = '#';
+          for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+          }
+          return color;
+        }
+
+        let playerColors = {};
+
         GameCanvas.prototype.draw = function(players, apples) {
           var context = this.context;
           var cellSize = this.cellSize;
 
-          this.context.fillStyle = "#555";
+          this.context.fillStyle = "#4E5180";
           this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
           $('#others').text('');
 
+
           players.forEach((p) => {
+            if (!playerColors[p.id]) {
+              playerColors[p.id] = getRandomColor();
+            }
+
             if (p.id === playerId) {
               $('#own').text(p.nickname + ' score: ' + p.points).append($('<br>'));
             } else {
               $('#others').append($('<span>').text(p.nickname + ' ' + p.id + ': ' + p.points)).append($('<br>'));
             }
 
-            if (p.id === playerId) {
-              context.fillStyle = "#fff";
-            } else {
-              context.fillStyle = "#4286f4";
-            }
+            let playerColor = playerColors[p.id];
+
+            context.fillStyle = playerColor;
             context.fillRect(p.x * cellSize, p.y * cellSize, cellSize, cellSize);
 
             p.tail.forEach((t) => {
+              context.fillStyle = playerColor;
               context.fillRect(t.x * cellSize, t.y * cellSize, cellSize, cellSize);
             });
           });
 
           apples.forEach((a) => {
-            context.fillStyle = "#ff0000";
+            context.fillStyle = getRandomColor();
             context.fillRect(a.x * cellSize, a.y * cellSize, cellSize, cellSize);
           });
         };
